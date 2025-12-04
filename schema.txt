@@ -1,0 +1,27 @@
+Class
+-----
+id PK uuid
+title string
+created_at datetime
+updated_at datetime
+
+
+CalendarSlot
+------------
+id PK uuid
+class_id uuid FK >- Class.id
+day string             # saturday, sunday, etc.
+time string            # "3-5", "5-7", "7-9"
+status boolean         # true = available, false = inactive/busy
+count int              # number of students selected
+created_at datetime
+updated_at datetime
+
+
+StudentPick
+-----------
+id PK uuid
+calendar_slot_id uuid FK >- CalendarSlot.id
+name string
+created_at datetime
+updated_at datetime
