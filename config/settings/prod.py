@@ -44,10 +44,10 @@ DATABASES = {
 
 # --- Static & Media ---
 STATIC_URL = "/static/"
-STATIC_ROOT = "/home1/salidevl/api.salidevlab.ir/public_html/static"
+STATIC_ROOT = "/home1/salidevl/api.salidevlab.ir/static"
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = "/home1/salidevl/api.salidevlab.ir/public_html/media"
+MEDIA_ROOT = "/home1/salidevl/api.salidevlab.ir/media"
 
 # Disable Django’s default debug toolbar signals
 DEBUG_PROPAGATE_EXCEPTIONS = False
