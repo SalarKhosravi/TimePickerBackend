@@ -41,7 +41,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         course = serializer.save()
         slots = [
-            CalendarSlot(course=course, day=day, time=time, status=False, count=0)
+            CalendarSlot(course=course, day=day, time=time, status=True, count=0)
             for day in DAYS for time in TIMES
         ]
         CalendarSlot.objects.bulk_create(slots)
