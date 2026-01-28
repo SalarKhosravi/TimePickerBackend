@@ -1,8 +1,8 @@
 # config/settings/base.py
 from pathlib import Path
-from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+AUTH_USER_MODEL = 'timepicker.CustomUser'
 
 INSTALLED_APPS = [
     'django.contrib.admin',

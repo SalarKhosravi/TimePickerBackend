@@ -1,5 +1,28 @@
-import uuid
 from django.db import models
+from django.conf import settings
+from django.core.validators import RegexValidator
+from django.contrib.auth.models import AbstractUser
+
+class CustomUser(AbstractUser):
+    full_name = models.CharField(max_length=255)
+    REQUIRED_FIELDS = []
+
+    phone_validator = RegexValidator(
+        regex=r'^0\d{10}$',
+        message="Phone number must start with 0 and contain 11 digits."
+    )
+
+    # database field stays 'username' but label it as phone_number in forms/API
+    username = models.CharField(
+        max_length=11,
+        unique=True,
+        validators=[phone_validator],
+        help_text="phone_number",
+    )
+
+    def __str__(self):
+        return self.full_name or self.username
+
 
 class Course(models.Model):
     title = models.CharField(max_length=255)
@@ -8,15 +31,6 @@ class Course(models.Model):
 
     def __str__(self):
         return self.title
-
-
-class Student(models.Model):
-    name = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.name
 
 
 class CalendarSlot(models.Model):
@@ -44,7 +58,11 @@ class CalendarSlot(models.Model):
         'thursday': 5,
     }
 
-    course = models.ForeignKey(Course, related_name='calendar_slots', on_delete=models.CASCADE)
+    course = models.ForeignKey(
+        Course,
+        related_name='calendar_slots',
+        on_delete=models.CASCADE,
+    )
     day = models.CharField(max_length=10, choices=DAYS_OF_WEEK)
     time = models.CharField(max_length=5, choices=TIME_SLOTS)
     status = models.BooleanField(default=False)
@@ -66,12 +84,22 @@ class CalendarSlot(models.Model):
         return f"{self.course.title} - {self.day} ({self.time})"
 
 
-class StudentPick(models.Model):
-    calendar_slot = models.ForeignKey(CalendarSlot, related_name='student_picks', on_delete=models.CASCADE)
-    student = models.ForeignKey(Student, related_name='student_picks', on_delete=models.CASCADE)
+
+
+class UserPick(models.Model):
+    calendar_slot = models.ForeignKey(
+        CalendarSlot,
+        related_name='user_picks',
+        on_delete=models.CASCADE,
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='user_picks',
+        on_delete=models.CASCADE,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.student.name} ({self.calendar_slot.course})"
-
+        return f"{self.user.get_username()} ({self.calendar_slot.course})"

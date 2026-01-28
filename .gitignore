@@ -10,6 +10,9 @@
 **/__pycache__/
 **/__pycache__/**
 *.pyc
+**/migrations/**
+!**/migrations/__init__.py
+
 
 .env
 db.sqlite3
