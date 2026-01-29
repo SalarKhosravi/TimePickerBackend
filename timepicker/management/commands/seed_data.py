@@ -98,10 +98,10 @@ class Command(BaseCommand):
         # === Create regular users ===
         self.stdout.write("Creating users...")
         users_data = [
-            {"phone": "09991112222", "full_name": "Ali Ahmadi"},
-            {"phone": "09992223333", "full_name": "Sara Mohammadi"},
-            {"phone": "09993334444", "full_name": "Reza Hosseini"},
-            {"phone": "09994445555", "full_name": "Zahra Karimi"},
+            {"phone": "09991234567", "full_name": "Ali Ahmadi"},
+            {"phone": "09991234568", "full_name": "Sara Mohammadi"},
+            {"phone": "09991234569", "full_name": "Reza Hosseini"},
+            {"phone": "09991234560", "full_name": "Zahra Karimi"},
         ]
         users = []
         for data in users_data:

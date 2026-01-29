@@ -1,6 +1,7 @@
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 from timepicker.views import (
+    AdminLoginApiView,
     UserViewSet,
     CourseViewSet,
     ShowCourseCalendarApiView,
@@ -8,13 +9,24 @@ from timepicker.views import (
     DeselectSlotApiView,
     ActivateSlotApiView,
     DeactivateSlotApiView,
+    UserRegisterApiView,
+    UserLoginApiView,
+    UserLogoutApiView,
 )
 
 router = DefaultRouter()
 router.register(r'courses', CourseViewSet, basename='course')
-router.register(r'users', UserViewSet, basename='user')
+router.register(r'users', UserViewSet, basename='user')  # admin-only list
 
 urlpatterns = [
+    path('admin/login/', AdminLoginApiView.as_view(), name='user_login'),
+
+    # ---------- Auth for normal users ----------
+    path('auth/register/', UserRegisterApiView.as_view(), name='user_register'),
+    path('auth/login/', UserLoginApiView.as_view(), name='user_login'),
+    path('auth/logout/', UserLogoutApiView.as_view(), name='user_logout'),
+
+
     path(
         'course/calendar/<int:course_id>/',
         ShowCourseCalendarApiView.as_view(),

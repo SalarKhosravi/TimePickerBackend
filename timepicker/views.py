@@ -1,26 +1,100 @@
 from django.shortcuts import get_object_or_404
 from django.db import transaction
-
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
-
-from django.contrib.auth import get_user_model
-
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import get_user_model, authenticate, logout
 from timepicker.models import Course, CalendarSlot, UserPick
 from timepicker.serializers import (
     CourseSerializer,
     CalendarSlotSerializer,
     RegisterSlotSerializer,
     UserSerializer,
+    UserRegisterSerializer,
+    UserLoginSerializer,
 )
 
-User = get_user_model()
 
 DAYS = ["saturday", "sunday", "monday", "tuesday", "wednesday", "thursday"]
 TIMES = ["3-5", "5-7", "7-9"]
+
+User = get_user_model()
+
+# ---------- Admin User ----------
+class AdminLoginApiView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = UserLoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data['username']
+        password = serializer.validated_data['password']
+
+        user = authenticate(request, username=username, password=password)
+        if not user:
+            return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        if not user.is_staff and not user.is_superuser:
+            return Response({"detail": "You are not allowed to access admin"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response({
+            "token": token.key
+        }, status=status.HTTP_200_OK)
+
+
+# ---------- Register User ----------
+class UserRegisterApiView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = UserRegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response({
+            "id": user.id,
+            "full_name": user.full_name,
+            "phone_number": user.username,
+            "token": token.key
+        }, status=status.HTTP_201_CREATED)
+
+
+# ---------- Login User ----------
+class UserLoginApiView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = UserLoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data['username']
+        password = serializer.validated_data['password']
+
+        user = authenticate(request, username=username, password=password)
+        if not user:
+            return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response({
+            "id": user.id,
+            "full_name": user.full_name,
+            "phone_number": user.username,
+            "token": token.key
+        }, status=status.HTTP_200_OK)
+
+
+# ---------- Logout User ----------
+class UserLogoutApiView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # delete token
+        Token.objects.filter(user=request.user).delete()
+        logout(request)
+        return Response({"detail": "Logged out successfully"}, status=status.HTTP_200_OK)
 
 
 # ---------------- User ViewSet ----------------
@@ -36,7 +110,8 @@ class CourseViewSet(viewsets.ModelViewSet):
     serializer_class = CourseSerializer
 
     def get_permissions(self):
-        if self.action == "destroy":
+        admin_actions = ["create", "update", "partial_update", "destroy"]
+        if self.action in admin_actions:
             return [IsAdminUser()]
         return [AllowAny()]
 
